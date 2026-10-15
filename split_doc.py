@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-Rozdziela pliki .md na business_logic/ i architecture/.
+Rozdziela pliki .md na business_development/ i architecture/.
 
 Struktura:
   src/*.md            11 plików wejściowych (sortowane alfabetycznie -> F01..F11)
   work/NN.units.json  pełna segmentacja (generuje `segment`)
   work/NN.to_tag.json wejście dla Claude (generuje `segment`)
-  work/NN.tags.json   odpowiedź Claude (zapisujesz ręcznie)
-  business_logic/     wynik (generuje `assemble`)
+  work/NN.tags.json   klasyfikacja jednostek (generuje agent)
+  business_development/ wynik biznesowy (generuje `assemble`)
   architecture/       wynik (generuje `assemble`)
 
 Użycie:
-  python split_docs.py segment
-  python split_docs.py assemble
-  python split_docs.py check
+  python split_doc.py segment
+  python split_doc.py assemble
+  python split_doc.py check
 """
 import json
 import re
@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 
 SRC, WORK = Path("src"), Path("work")
-BL_DIR, AR_DIR = Path("business_logic"), Path("architecture")
+BL_DIR, AR_DIR = Path("business_development"), Path("architecture")
 
 TECH = re.compile(
     r"\b(REST|GraphQL|endpoint\w*|HTTPS?|JSON|SQL|Kafka|Redis|API|gRPC|"
@@ -124,7 +124,7 @@ def assemble():
                 if t.get("bl_text"):
                     bl.append(f"<!-- {uid} | see: architecture/{f.name} -->\n{t['bl_text']}")
                 if t.get("arch_text"):
-                    ar.append(f"<!-- {uid} | see: business_logic/{f.name} -->\n{t['arch_text']}")
+                    ar.append(f"<!-- {uid} | see: business_development/{f.name} -->\n{t['arch_text']}")
         head = f"<!-- source: src/{f.name} -->\n\n"
         (BL_DIR / f.name).write_text(head + "\n\n".join(bl) + "\n", encoding="utf-8")
         (AR_DIR / f.name).write_text(head + "\n\n".join(ar) + "\n", encoding="utf-8")
