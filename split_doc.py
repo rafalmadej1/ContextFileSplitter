@@ -6,14 +6,14 @@ Struktura:
   src/*.md            11 plików wejściowych (sortowane alfabetycznie -> F01..F11)
   work/NN.units.json  pełna segmentacja (generuje `segment`)
   work/NN.to_tag.json wejście dla Claude (generuje `segment`)
-  work/NN.tags.json   odpowiedź Claude (zapisujesz ręcznie)
-  business_logic/     wynik (generuje `assemble`)
+  work/NN.tags.json   klasyfikacja jednostek (generuje agent)
+  business_logic/ wynik biznesowy (generuje `assemble`)
   architecture/       wynik (generuje `assemble`)
 
 Użycie:
-  python split_docs.py segment
-  python split_docs.py assemble
-  python split_docs.py check
+  python split_doc.py segment
+  python split_doc.py assemble
+  python split_doc.py check
 """
 import json
 import re
@@ -164,7 +164,7 @@ def check():
             problems += 1
 
         # czystość: technologie w BL (poza komentarzami)
-        for line in re.sub(r"<!--.*?-->", "", bl_text).splitlines():
+        for line in re.sub(r"<!--.*?-->", "", bl_text, flags=re.DOTALL).splitlines():
             m = TECH.search(line)
             if m:
                 print(f"[BL {f.name}] technologia '{m.group(0)}': {line.strip()[:80]}")
