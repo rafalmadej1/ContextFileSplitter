@@ -164,7 +164,7 @@ def check():
             problems += 1
 
         # czystość: technologie w BL (poza komentarzami)
-        for line in re.sub(r"<!--.*?-->", "", bl_text).splitlines():
+        for line in re.sub(r"<!--.*?-->", "", bl_text, flags=re.DOTALL).splitlines():
             m = TECH.search(line)
             if m:
                 print(f"[BL {f.name}] technologia '{m.group(0)}': {line.strip()[:80]}")
