@@ -1,0 +1,5 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "context-file-splitter",
+  "description": "Automatically classifies Markdown context files and splits business development from architecture."
+}
