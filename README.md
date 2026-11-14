@@ -53,7 +53,7 @@ flowchart LR
     end
 
     subgraph Classify["3. AI Classification"]
-        PROMPT["prompt_tagowanie.md"]
+        PROMPT["prompt_tagging.md"]
         TAGS["work/NN.tags.json"]
     end
 
@@ -81,7 +81,7 @@ flowchart LR
 
 ## Classification Model
 
-Every non-heading block is evaluated against the **Technology Replacement Rule** defined in [`prompt_tagowanie.md`](prompt_tagowanie.md):
+Every non-heading block is evaluated against the **Technology Replacement Rule** defined in [`prompt_tagging.md`](prompt_tagging.md):
 
 > **Decision Rule:** *Would the statement remain true after a complete change of technology?*
 > - **Yes** → `BL` (Business Logic)
@@ -149,7 +149,7 @@ Endpoint POST /orders/{id}/approve returns 403 for roles other than the authoriz
        └── 02_payments.md
    ```
 2. Invoke the **`context-file-splitter`** skill in Antigravity (defined in [`skills/context-file-splitter/SKILL.md`](skills/context-file-splitter/SKILL.md)).
-3. The agent automatically runs segmentation, classifies all blocks according to [`prompt_tagowanie.md`](prompt_tagowanie.md), assembles `business_logic/` and `architecture/`, validates output purity with `check`, and reports a summary along with any low-confidence units.
+3. The agent automatically runs segmentation, classifies all blocks according to [`prompt_tagging.md`](prompt_tagging.md), assembles `business_logic/` and `architecture/`, validates output purity with `check`, and reports a summary along with any low-confidence units.
 
 ### Option B: Manual CLI Execution
 
@@ -160,7 +160,7 @@ Run [`split_doc.py`](split_doc.py) from your target project root:
 python3 /path/to/ContextFileSplitter/split_doc.py segment
 
 # 2. Classify each work/NN.to_tag.json into work/NN.tags.json
-#    following the schema and rules in prompt_tagowanie.md
+#    following the schema and rules in prompt_tagging.md
 
 # 3. Assemble business_logic/*.md and architecture/*.md
 python3 /path/to/ContextFileSplitter/split_doc.py assemble
@@ -181,7 +181,7 @@ ContextFileSplitter/
 │   └── context-file-splitter/
 │       └── SKILL.md                         # Antigravity skill workflow instructions
 ├── plugin.json                              # Antigravity plugin manifest
-├── prompt_tagowanie.md                      # Classification rules, schema & boundary examples
+├── prompt_tagging.md                        # Classification rules, schema & boundary examples
 ├── split_doc.py                             # Segmentation, assembly & validation CLI
 ├── README.md                                # Documentation
 └── LICENSE                                  # Apache-2.0 License

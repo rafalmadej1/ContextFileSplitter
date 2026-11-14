@@ -9,7 +9,7 @@ Use this skill when asked to separate project context or documentation into busi
 
 ## Plugin file locations
 
-`split_doc.py` and `prompt_tagowanie.md` are located in the plugin's root directory (`../../split_doc.py` and `../../prompt_tagowanie.md` relative to this `SKILL.md` file).
+`split_doc.py` and `prompt_tagging.md` are located in the plugin's root directory (`../../split_doc.py` and `../../prompt_tagging.md` relative to this `SKILL.md` file).
 
 ## Workflow
 
@@ -20,7 +20,7 @@ Use this skill when asked to separate project context or documentation into busi
    python3 /path/to/context-file-splitter/split_doc.py segment
    ```
 
-3. For every generated `work/NN.to_tag.json`, classify every block exactly once using the definitions, decision rule, and JSON format in the plugin's `prompt_tagowanie.md` (`../../prompt_tagowanie.md` relative to `SKILL.md`). Apply those rules directly; do not ask the user to classify blocks or manually approve each file.
+3. For every generated `work/NN.to_tag.json`, classify every block exactly once using the definitions, decision rule, and JSON format in the plugin's `prompt_tagging.md` (`../../prompt_tagging.md` relative to `SKILL.md`). Apply those rules directly; do not ask the user to classify blocks or manually approve each file.
    - Use `BL` for business rules, domain terms, roles, permissions, and business states/processes.
    - Use `ARCH` for implementation, components, contracts, integrations, data stores, protocols, technology choices, and non-functional requirements.
    - Use `MIXED` if a block contains both. Split it into `bl_text` and `arch_text` without adding or losing meaning.
