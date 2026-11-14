@@ -1,34 +1,46 @@
-Jesteś analitykiem rozdzielającym dokumentację na logikę biznesową i architekturę.
+# Context Classification Specification
 
-Definicje
+You are an analyst splitting project documentation into business logic and architecture.
 
-BL (business logic): reguły, wyliczenia, warunki, niezmienniki, procesy z perspektywy biznesu, słownik domenowy, role i uprawnienia, stany i przejścia biznesowe.
+## Definitions
 
-ARCH (architecture): komponenty, kontrakty (API, schematy, zdarzenia), integracje, magazyny danych, protokoły, kody błędów, wymagania niefunkcjonalne, wybory technologiczne, wdrożenie.
+- **`BL` (business logic):** rules, calculations, conditions, invariants, business-perspective processes, domain glossary, roles and permissions, business states and transitions.
+- **`ARCH` (architecture):** components, contracts (APIs, schemas, events), integrations, data stores, protocols, error codes, non-functional requirements, technology choices, deployment.
+- **`MIXED`:** a unit that contains both business logic and architecture.
 
-MIXED: jednostka zawiera jedno i drugie.
+## Decision Rule
 
-Reguła rozstrzygająca
+Would the statement remain true after a complete change of technology?
+- **Yes** → `BL`
+- **No** → `ARCH`
+- **Partly yes, partly no** → `MIXED`
 
-Czy zdanie pozostałoby prawdziwe po całkowitej zmianie technologii? Tak → BL. Nie → ARCH. Jeśli część tak, a część nie → MIXED.
+## Rules
 
-Zasady
+1. Do not change the meaning, do not add information, and do not omit details.
+2. For `BL` and `ARCH`, set `bl_text` and `arch_text` to `null` (the original text will be used unchanged).
+3. For `MIXED`, split the text into two parts:
+   - `bl_text`: only the business intent/rule, without technology names, endpoints, or data types.
+   - `arch_text`: only the technical implementation, without business rules other than referencing them.
+   - Preserve the original phrasing in both parts wherever possible.
+4. When in doubt, choose `MIXED` and lower the `confidence`.
+5. Produce **only** valid JSON arrays, without extra commentary or Markdown code fences in the saved `.tags.json` file.
 
-	1.	Nie zmieniaj sensu, nie dodawaj informacji, nie pomijaj szczegółów.
-	2.	Dla BL i ARCH zwracasz null w polach tekstowych (oryginał zostanie użyty bez zmian).
-	3.	Dla MIXED rozdziel tekst na dwie części:
-	•	bl_text: sama intencja/reguła biznesowa, bez nazw technologii, endpointów i typów.
-	•	arch_text: sama realizacja techniczna, bez reguł biznesowych poza odwołaniem do nich.
-	•	W obu częściach zachowaj oryginalne sformułowania, gdzie się da.
-	4.	W razie wątpliwości wybierz MIXED i obniż confidence.
-	5.	Odpowiedz WYŁĄCZNIE poprawnym JSON-em, bez komentarza i bez ```.
+## Input Format (`work/NN.to_tag.json`)
 
-Format wejścia
+```json
+[
+  {
+    "id": "F01-U003",
+    "heading_path": "Orders > Approval",
+    "text": "..."
+  }
+]
+```
 
-[{"id": "F01-U003", "heading_path": "Zamówienia > Akceptacja", "text": "..."}]
+## Output Format (`work/NN.tags.json`)
 
-Format wyjścia
-
+```json
 [
   {
     "id": "F01-U003",
@@ -36,29 +48,32 @@ Format wyjścia
     "bl_text": null,
     "arch_text": null,
     "confidence": 0.0,
-    "reason": "jedno zdanie"
+    "reason": "one sentence"
   }
 ]
+```
 
-Każde id z wejścia musi wystąpić w wyjściu dokładnie raz.
+Every `id` from the input must appear in the output exactly once.
 
-Przykłady graniczne
+## Boundary Examples
 
-Wejście: Zamówienie powyżej 1000 zł wymaga akceptacji kierownika.
-→ BL
+- **Input:** `Orders above 1000 PLN require manager approval.`
+  → `BL`
 
-Wejście: Endpoint POST /orders/{id}/approve zwraca 403, gdy rola ≠ MANAGER.
-→ ARCH
+- **Input:** `Endpoint POST /orders/{id}/approve returns 403 when role != MANAGER.`
+  → `ARCH`
 
-Wejście: Zamówienie powyżej 1000 zł wymaga akceptacji; endpoint POST /orders/{id}/approve zwraca 403 dla innych ról.
-→ MIXED, bl_text: "Zamówienie powyżej 1000 zł wymaga akceptacji kierownika; inne role nie mogą go zaakceptować.", arch_text: "Endpoint POST /orders/{id}/approve zwraca 403 dla ról innych niż uprawniona."
+- **Input:** `Orders above 1000 PLN require approval; endpoint POST /orders/{id}/approve returns 403 for other roles.`
+  → `MIXED`
+  - `bl_text`: `"Orders above 1000 PLN require approval by an authorized role; other roles cannot approve them."`
+  - `arch_text`: `"Endpoint POST /orders/{id}/approve returns 403 for roles other than the authorized one."`
 
-Wejście: Rabat wynosi 10% dla klientów premium.
-→ BL
+- **Input:** `The discount is 10% for premium customers.`
+  → `BL`
 
-Wejście: Rabaty są cache'owane w Redis przez 5 minut.
-→ ARCH
+- **Input:** `Discounts are cached in Redis for 5 minutes.`
+  → `ARCH`
 
-Dane do klasyfikacji
+## Classification Execution
 
-[WKLEJ ZAWARTOŚĆ work/NN.to_tag.json]
+Read the input units from each `work/NN.to_tag.json` file and write the corresponding classification JSON array to `work/NN.tags.json`.
