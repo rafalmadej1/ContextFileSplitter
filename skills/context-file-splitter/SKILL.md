@@ -1,28 +1,32 @@
 ---
 name: context-file-splitter
-description: Classify Markdown context files and split them into business_development/ and architecture/ outputs.
+description: Classify Markdown context files and split them into business_logic/ and architecture/ outputs.
 ---
 
 # Split context files
 
-Use this skill when asked to separate project context or documentation into business development and architecture files.
+Use this skill when asked to separate project context or documentation into business logic and architecture files.
+
+## Plugin file locations
+
+`split_doc.py` and `prompt_tagging.md` are located in the plugin's root directory (`../../split_doc.py` and `../../prompt_tagging.md` relative to this `SKILL.md` file).
 
 ## Workflow
 
 1. Work from the target project root. The splitter reads Markdown files from `src/*.md` and writes generated intermediates to `work/`; do not modify the source documents.
-2. Locate the plugin's bundled `split_doc.py` and run it from the target project root:
+2. Locate the plugin's bundled `split_doc.py` (`../../split_doc.py` relative to `SKILL.md`) and run it from the target project root:
 
    ```sh
    python3 /path/to/context-file-splitter/split_doc.py segment
    ```
 
-3. For every generated `work/NN.to_tag.json`, classify every block exactly once using the definitions, decision rule, and JSON format in the plugin's `prompt_tagowanie.md`. Apply those rules directly; do not ask the user to classify blocks or manually approve each file.
+3. For every generated `work/NN.to_tag.json`, classify every block exactly once using the definitions, decision rule, and JSON format in the plugin's `prompt_tagging.md` (`../../prompt_tagging.md` relative to `SKILL.md`). Apply those rules directly; do not ask the user to classify blocks or manually approve each file.
    - Use `BL` for business rules, domain terms, roles, permissions, and business states/processes.
    - Use `ARCH` for implementation, components, contracts, integrations, data stores, protocols, technology choices, and non-functional requirements.
    - Use `MIXED` if a block contains both. Split it into `bl_text` and `arch_text` without adding or losing meaning.
    - For `BL` and `ARCH`, set both text fields to `null`. Preserve every input ID exactly once and include a confidence and one-sentence reason.
    - Save the resulting JSON arrays as matching `work/NN.tags.json` files.
-4. Run the bundled script's `assemble` command from the target project root to produce `business_development/` and `architecture/`.
+4. Run the bundled script's `assemble` command from the target project root to produce `business_logic/` and `architecture/`.
 5. Run its `check` command. Resolve missing/extra IDs or other reported problems by correcting the tags and reassembling. Report low-confidence IDs for review.
 6. Summarize the generated files and any low-confidence classifications. Do not claim success if validation fails.
 
