@@ -45,6 +45,10 @@ def split_units(text):
     units, buf, fence = [], [], None
 
     def flush():
+        """Save the buffer contents as a new unit and clear the buffer.
+
+        Does nothing if the buffer is empty.
+        """
         if buf:
             units.append("\n".join(buf).strip("\n"))
             buf.clear()
@@ -73,6 +77,15 @@ def split_units(text):
 
 
 def sources():
+    """Return a numbered list of input files from the src/ directory.
+
+    The *.md files are sorted alphabetically and numbering starts at 1
+    (matching the F01, F02, ... prefixes in unit identifiers). Exits with
+    an error message if no files are found.
+
+    Returns:
+        List of (number, file path) pairs.
+    """
     files = sorted(SRC.glob("*.md"))
     if not files:
         sys.exit("No files found in src/*.md")
@@ -107,6 +120,16 @@ def heading_level(text):
 
 
 def segment():
+    """Segment the files from src/ into units and write the results to work/.
+
+    For each input file NN it creates:
+        - work/NN.units.json  - the full list of units (headings and blocks)
+        with identifiers in the FNN-UXXX format,
+        - work/NN.to_tag.json - blocks only (no headings), together with the
+        heading path (heading_path), intended for classification by the agent.
+
+    Prints the number of units to be tagged for each file to standard output.
+    """
     WORK.mkdir(exist_ok=True)
     for i, f in sources():
         units, path = [], []
@@ -139,6 +162,21 @@ def segment():
 
 
 def assemble():
+    """Assemble the output files in business_logic/ and architecture/ based on the tags.
+
+    For each input file it loads work/NN.units.json and work/NN.tags.json
+    (files without tags are skipped with a message) and builds two versions
+    of the document:
+        - headings go into both versions,
+        - blocks tagged BL go only to business_logic/,
+        - blocks tagged ARCH go only to architecture/,
+        - MIXED blocks are split into bl_text and arch_text; each part goes to
+        the corresponding directory together with a reference to the other,
+        - untagged blocks go into both versions with an UNTAGGED annotation.
+
+    Each unit is preceded by an HTML comment with its identifier, and each
+    file by a comment with the path of the source file.
+    """
     BL_DIR.mkdir(exist_ok=True)
     AR_DIR.mkdir(exist_ok=True)
     for i, f in sources():
@@ -199,6 +237,21 @@ def assemble():
 
 
 def check():
+    """Verify the consistency of the segmentation, tags and output files.
+
+    For each input file it checks that:
+        - a tags.json file exists,
+        - every block has a tag (a missing tag counts as a problem),
+        - every block is present in business_logic/ or architecture/,
+        - the tags contain no identifiers outside the segmentation (surplus tags),
+        - business_logic/ contains no technology names (the TECH pattern);
+        HTML comments are ignored.
+
+    Units with confidence below 0.7 are only reported for manual review and
+    do not count as problems.
+
+    Exits with code 1 if any problems were found, otherwise with code 0.
+    """
     problems = 0
     low_conf = []
     for i, f in sources():
